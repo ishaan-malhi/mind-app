@@ -8,16 +8,13 @@ export function renderEntries(state, section, onInput, visibleCount, onAddEntry,
 
   for (let i = 0; i < visibleCount; i++) {
     const isLast = i === visibleCount - 1;
-    const onEnterInLast = isLast
-      ? (visibleCount < 3
-          ? () => {
-              section.classList.add('show-add');
-              const addBtn = section.querySelector('.entry-add-btn');
-              if (addBtn) addBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-          : onMaxReached)
-      : null;
-    section.appendChild(buildEntry(state.entries[i], i, onInput, onEnterInLast));
+    const isLastAddable = isLast && visibleCount < 3;
+    const isAtMax = isLast && visibleCount === 3;
+    section.appendChild(buildEntry(
+      state.entries[i], i, onInput, section,
+      isLastAddable,
+      isAtMax ? onMaxReached : null
+    ));
   }
 
   if (visibleCount < 3) {
@@ -36,7 +33,7 @@ export function renderEntries(state, section, onInput, visibleCount, onAddEntry,
   }
 }
 
-function buildEntry(text, idx, onInput, onEnterInLast) {
+function buildEntry(text, idx, onInput, section, isLastAddable, onMaxReached) {
   const item = document.createElement('div');
   item.className = 'entry-item';
 
@@ -51,16 +48,27 @@ function buildEntry(text, idx, onInput, onEnterInLast) {
 
   const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
   setTimeout(resize, 0);
-  ta.addEventListener('input', () => { resize(); onInput(idx, ta.value); });
 
-  if (onEnterInLast) {
-    ta.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (ta.value.trim()) onEnterInLast();
+  ta.addEventListener('input', () => {
+    resize();
+    onInput(idx, ta.value);
+    if (isLastAddable) {
+      const hasContent = !!ta.value.trim();
+      section.classList.toggle('show-add', hasContent);
+      if (hasContent) {
+        const addBtn = section.querySelector('.entry-add-btn');
+        if (addBtn) addBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
-    });
-  }
+    }
+  });
+
+  // Prevent newline; pulse submit on Enter at max
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (onMaxReached && ta.value.trim()) onMaxReached();
+    }
+  });
 
   item.appendChild(ta);
   return item;
@@ -343,46 +351,51 @@ export function renderCalendar(wrap, year, month, entryKeys, onDayClick, onPrevM
 
 export function renderDayDetail(bodyEl, entry, onSave) {
   bodyEl.innerHTML = '';
-  const entries = entry.entries || ['', '', ''];
+  const allEntries = entry.entries || ['', '', ''];
+  const filled = allEntries.filter(e => e.trim());
 
   const list = document.createElement('div');
   list.className = 'detail-entries';
-  entries.forEach((text, idx) => {
-    if (!text.trim() && !onSave) return; // read-only: skip empty
-    const item = document.createElement('div');
-    item.className = 'entry-item';
 
-    const num = document.createElement('span');
-    num.className = 'entry-num';
-    num.textContent = idx + 1;
-    num.setAttribute('aria-hidden', 'true');
+  if (onSave) {
+    // Edit mode: all 3 editable textareas
+    allEntries.forEach((text, idx) => {
+      const item = document.createElement('div');
+      item.className = 'entry-item';
+      const ta = document.createElement('textarea');
+      ta.className = 'entry-input';
+      ta.value = text;
+      ta.placeholder = 'grateful for\u2026';
+      ta.rows = 1;
+      ta.setAttribute('autocorrect', 'on');
+      ta.setAttribute('autocapitalize', 'sentences');
+      ta.setAttribute('aria-label', `Entry ${idx + 1}`);
+      const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+      setTimeout(resize, 0);
+      ta.addEventListener('input', () => { resize(); entry.entries[idx] = ta.value; onSave(entry); });
+      item.appendChild(ta);
+      list.appendChild(item);
+    });
+  } else {
+    // Read-only: only filled entries, no number if single
+    filled.forEach((text, i) => {
+      const item = document.createElement('div');
+      item.className = 'detail-entry-ro';
+      if (filled.length > 1) {
+        const num = document.createElement('span');
+        num.className = 'detail-num';
+        num.textContent = i + 1;
+        num.setAttribute('aria-hidden', 'true');
+        item.appendChild(num);
+      }
+      const p = document.createElement('p');
+      p.className = 'detail-entry-text';
+      p.textContent = text;
+      item.appendChild(p);
+      list.appendChild(item);
+    });
+  }
 
-    const ta = document.createElement('textarea');
-    ta.className = 'entry-input';
-    ta.value = text;
-    ta.placeholder = 'I\u2019m grateful for\u2026';
-    ta.rows = 1;
-    ta.setAttribute('autocorrect', 'on');
-    ta.setAttribute('autocapitalize', 'sentences');
-    ta.setAttribute('aria-label', `Entry ${idx + 1}`);
-
-    const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
-    setTimeout(resize, 0);
-
-    if (onSave) {
-      ta.addEventListener('input', () => {
-        resize();
-        entry.entries[idx] = ta.value;
-        onSave(entry);
-      });
-    } else {
-      ta.readOnly = true;
-    }
-
-    item.appendChild(num);
-    item.appendChild(ta);
-    list.appendChild(item);
-  });
   if (list.children.length > 0) bodyEl.appendChild(list);
 
   if (entry.image || entry.voice) {

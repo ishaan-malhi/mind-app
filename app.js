@@ -51,6 +51,7 @@ const detailDate      = $('detail-date');
 const detailBody      = $('detail-body');
 const closeDetailBtn  = $('close-detail-btn');
 const deleteDetailBtn = $('delete-detail-btn');
+const editDetailBtn   = $('edit-detail-btn');
 const quoteScreen     = $('quote-screen');
 const quoteBg         = $('quote-bg');
 const quoteTextEl     = $('quote-text');
@@ -90,6 +91,7 @@ function init() {
   dayDetail.addEventListener('click', e => { if (e.target.classList.contains('overlay-backdrop')) closeDetail(); });
   closeDetailBtn.addEventListener('click', closeDetail);
   if (deleteDetailBtn) deleteDetailBtn.addEventListener('click', deleteCurrentEntry);
+  if (editDetailBtn) editDetailBtn.addEventListener('click', enableDetailEdit);
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (!quoteScreen.classList.contains('hidden')) { closeQuoteScreen(); openReview(); return; }
@@ -348,19 +350,30 @@ function refreshCalendar() {
 
 // ── Day detail ─────────────────────────────────────────────
 
+function detailSaver(key) {
+  return updatedEntry => {
+    saveEntry(key, updatedEntry);
+    if (key === today) { state = updatedEntry; refreshEntries(); }
+    refreshStreak();
+  };
+}
+
+function enableDetailEdit() {
+  if (!currentDetailKey) return;
+  const entry = loadEntry(currentDetailKey);
+  if (!entry) return;
+  editDetailBtn.style.display = 'none';
+  renderDayDetail(detailBody, entry, detailSaver(currentDetailKey));
+  detailBody.querySelector('.entry-input')?.focus();
+}
+
 function openDetail(key) {
   const entry = loadEntry(key);
   if (!entry) return;
   currentDetailKey = key;
   detailDate.textContent = formatHistoryDate(key);
-  renderDayDetail(detailBody, entry, updatedEntry => {
-    saveEntry(key, updatedEntry);
-    if (key === today) {
-      state = updatedEntry;
-      refreshEntries();
-    }
-    refreshStreak();
-  });
+  editDetailBtn.style.display = '';
+  renderDayDetail(detailBody, entry, null); // read-only by default
   dayDetail.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   closeDetailBtn.focus();

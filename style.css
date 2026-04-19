@@ -38,8 +38,8 @@
   --color-surface-2:   #ddd7cc;
   --color-border:      #cec8be;
   --color-border-2:    #bdb6ac;
-  --color-accent:      #7fa896;
-  --color-accent-soft: #ddeee8;
+  --color-accent:      #b08898;
+  --color-accent-soft: #f0e2ea;
   --color-text:        #1c1c20;
   --color-text-muted:  #484858;
   --color-text-faint:  #9a96a8;
@@ -247,7 +247,7 @@ body {
 }
 
 .entry-item:focus-within {
-  background: rgba(127, 168, 150, 0.09);
+  background: rgba(176, 136, 152, 0.08);
 }
 
 .entry-item:focus-within::before {
@@ -796,6 +796,8 @@ body {
 .icon-btn--danger:hover,
 .icon-btn--danger:active { color: var(--color-destructive); }
 
+.overlay-header-actions { display: flex; align-items: center; }
+
 /* ── Day detail body ──────────────────────────────────────────── */
 
 .detail-body {
@@ -807,7 +809,34 @@ body {
   gap: 20px;
 }
 
-.detail-entries { display: flex; flex-direction: column; gap: 10px; }
+.detail-entries { display: flex; flex-direction: column; gap: 0; }
+
+/* Read-only entry row */
+.detail-entry-ro {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.detail-entry-ro:last-child { border-bottom: none; }
+
+.detail-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-faint);
+  padding-top: 3px;
+  min-width: 14px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.detail-entry-text {
+  font-size: 16px;
+  color: var(--color-text);
+  line-height: 1.55;
+  flex: 1;
+}
 
 .detail-entry {
   font-family: var(--font-sans);
