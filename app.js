@@ -52,7 +52,6 @@ const detailBody      = $('detail-body');
 const closeDetailBtn  = $('close-detail-btn');
 const deleteDetailBtn = $('delete-detail-btn');
 const editDetailBtn   = $('edit-detail-btn');
-const shareDetailBtn  = $('share-detail-btn');
 const quoteScreen     = $('quote-screen');
 const quoteBg         = $('quote-bg');
 const quoteTextEl     = $('quote-text');
@@ -93,7 +92,6 @@ function init() {
   closeDetailBtn.addEventListener('click', closeDetail);
   if (deleteDetailBtn) deleteDetailBtn.addEventListener('click', deleteCurrentEntry);
   if (editDetailBtn) editDetailBtn.addEventListener('click', enableDetailEdit);
-  if (shareDetailBtn) shareDetailBtn.addEventListener('click', shareDetail);
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (!quoteScreen.classList.contains('hidden')) { closeQuoteScreen(); openReview(); return; }
@@ -362,16 +360,27 @@ async function shareDetail() {
   const text = filled.length === 1
     ? `${date}\n\n${filled[0]}`
     : `${date}\n\n${filled.map((e, i) => `${i + 1}. ${e}`).join('\n')}`;
-  if (navigator.share) {
-    try { await navigator.share({ title: 'Mind', text }); } catch (_) {}
-  } else {
-    // Fallback: copy to clipboard
+
+  if (!navigator.share) {
+    try { await navigator.clipboard.writeText(text); } catch (_) {}
+    return;
+  }
+
+  // Share image as file if available
+  if (entry.image && navigator.canShare) {
     try {
-      await navigator.clipboard.writeText(text);
-      shareDetailBtn.setAttribute('aria-label', 'Copied!');
-      setTimeout(() => shareDetailBtn.setAttribute('aria-label', 'Share entry'), 1500);
+      const res = await fetch(entry.image);
+      const blob = await res.blob();
+      const file = new File([blob], 'memory.jpg', { type: blob.type });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Mind', text });
+        return;
+      }
     } catch (_) {}
   }
+
+  // Text-only fallback
+  try { await navigator.share({ title: 'Mind', text }); } catch (_) {}
 }
 
 function detailSaver(key) {
@@ -386,7 +395,6 @@ function enableDetailEdit() {
   if (!currentDetailKey) return;
   const entry = loadEntry(currentDetailKey);
   if (!entry) return;
-  editDetailBtn.style.display = 'none';
   renderDayDetail(detailBody, entry, detailSaver(currentDetailKey));
   detailBody.querySelector('.entry-input')?.focus();
 }
@@ -396,8 +404,7 @@ function openDetail(key) {
   if (!entry) return;
   currentDetailKey = key;
   detailDate.textContent = formatHistoryDate(key);
-  editDetailBtn.style.display = '';
-  renderDayDetail(detailBody, entry, null); // read-only by default
+  renderDayDetail(detailBody, entry, null, shareDetail, enableDetailEdit);
   dayDetail.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   closeDetailBtn.focus();
