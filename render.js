@@ -2,18 +2,20 @@ import { loadEntry, getAllEntryKeys, formatHistoryDate, formatMonthYear, getCale
 
 // ── Entries (progressive, 1–3) ────────────────────────────
 
-export function renderEntries(state, section, onInput, visibleCount, onAddEntry) {
+export function renderEntries(state, section, onInput, visibleCount, onAddEntry, onMaxReached) {
   section.innerHTML = '';
   section.classList.remove('show-add');
 
   for (let i = 0; i < visibleCount; i++) {
     const isLast = i === visibleCount - 1;
-    const onEnterInLast = (isLast && visibleCount < 3)
-      ? () => {
-          section.classList.add('show-add');
-          const addBtn = section.querySelector('.entry-add-btn');
-          if (addBtn) addBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+    const onEnterInLast = isLast
+      ? (visibleCount < 3
+          ? () => {
+              section.classList.add('show-add');
+              const addBtn = section.querySelector('.entry-add-btn');
+              if (addBtn) addBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          : onMaxReached)
       : null;
     section.appendChild(buildEntry(state.entries[i], i, onInput, onEnterInLast));
   }

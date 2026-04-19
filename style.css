@@ -206,6 +206,14 @@ body {
   margin-top: -4px;
 }
 
+/* ── Entry composer (entries + media grouped) ────────────────── */
+
+.entry-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* ── Entries ─────────────────────────────────────────────────── */
 
 .entries-section { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }

@@ -177,8 +177,13 @@ function onAddEntry() {
   }, 0);
 }
 
+function onMaxReached() {
+  submitBtn.classList.add('submit-btn--done');
+  setTimeout(() => submitBtn.classList.remove('submit-btn--done'), 800);
+}
+
 function refreshEntries() {
-  renderEntries(state, entriesSection, (idx, val) => { state.entries[idx] = val; save(); }, visibleCount, onAddEntry);
+  renderEntries(state, entriesSection, (idx, val) => { state.entries[idx] = val; save(); }, visibleCount, onAddEntry, onMaxReached);
 }
 
 // ── Media (photo + voice, compact layout when both idle) ───
