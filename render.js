@@ -9,7 +9,11 @@ export function renderEntries(state, section, onInput, visibleCount, onAddEntry)
   for (let i = 0; i < visibleCount; i++) {
     const isLast = i === visibleCount - 1;
     const onEnterInLast = (isLast && visibleCount < 3)
-      ? () => section.classList.add('show-add')
+      ? () => {
+          section.classList.add('show-add');
+          const addBtn = section.querySelector('.entry-add-btn');
+          if (addBtn) addBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       : null;
     section.appendChild(buildEntry(state.entries[i], i, onInput, onEnterInLast));
   }
@@ -37,7 +41,7 @@ function buildEntry(text, idx, onInput, onEnterInLast) {
   const ta = document.createElement('textarea');
   ta.className   = 'entry-input';
   ta.value       = text;
-  ta.placeholder = idx === 0 ? 'grateful for\u2026' : '';
+  ta.placeholder = '';
   ta.rows        = 1;
   ta.setAttribute('autocorrect', 'on');
   ta.setAttribute('autocapitalize', 'sentences');

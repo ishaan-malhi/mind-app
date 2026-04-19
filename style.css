@@ -208,7 +208,7 @@ body {
 
 /* ── Entries ─────────────────────────────────────────────────── */
 
-.entries-section { display: flex; flex-direction: column; gap: 4px; }
+.entries-section { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
 
 .entry-item {
   display: flex;
@@ -250,13 +250,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--color-accent-soft);
   border: none;
   color: var(--color-accent);
   cursor: pointer;
+  align-self: center;
   margin-top: 4px;
   opacity: 0;
   pointer-events: none;

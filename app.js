@@ -73,6 +73,12 @@ function init() {
   refreshEntries();
   refreshMedia();
 
+  // Open in focused state — shows accent animation, no keyboard popup on iOS
+  requestAnimationFrame(() => {
+    const firstInput = entriesSection.querySelector('.entry-input');
+    if (firstInput) firstInput.focus({ preventScroll: true });
+  });
+
   photoInput.addEventListener('change', onPhotoSelect);
   submitBtn.addEventListener('click', submitToday);
   reviewBtn.addEventListener('click', openReview);
