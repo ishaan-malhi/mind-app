@@ -9,6 +9,8 @@ let state = loadEntry(today) || { date: today, entries: ['', '', ''], image: nul
 while (state.entries.length < 3) state.entries.push('');
 if (state.entries.length > 3) state.entries = state.entries.slice(0, 3);
 
+let visibleCount = Math.max(1, state.entries.filter(e => e.trim()).length);
+
 let recorder  = null;
 let recChunks = [];
 let recTimer  = null;
@@ -159,8 +161,18 @@ function refreshStreak() {
 
 // ── Entries ────────────────────────────────────────────────
 
+function onAddEntry() {
+  if (visibleCount >= 3) return;
+  visibleCount++;
+  refreshEntries();
+  setTimeout(() => {
+    const inputs = entriesSection.querySelectorAll('.entry-input');
+    inputs[inputs.length - 1]?.focus();
+  }, 0);
+}
+
 function refreshEntries() {
-  renderEntries(state, entriesSection, (idx, val) => { state.entries[idx] = val; save(); });
+  renderEntries(state, entriesSection, (idx, val) => { state.entries[idx] = val; save(); }, visibleCount, onAddEntry);
 }
 
 // ── Media (photo + voice, compact layout when both idle) ───

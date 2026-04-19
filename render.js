@@ -1,25 +1,43 @@
 import { loadEntry, getAllEntryKeys, formatHistoryDate, formatMonthYear, getCalendarDays, dateKey, getRelativeTimeLabel, shuffle } from './utils.js';
 
-// ── Entries (fixed 3) ──────────────────────────────────────
+// ── Entries (progressive, 1–3) ────────────────────────────
 
-export function renderEntries(state, section, onInput) {
+export function renderEntries(state, section, onInput, visibleCount, onAddEntry) {
   section.innerHTML = '';
-  state.entries.forEach((text, i) => section.appendChild(buildEntry(text, i, onInput)));
+  section.classList.remove('show-add');
+
+  for (let i = 0; i < visibleCount; i++) {
+    const isLast = i === visibleCount - 1;
+    const onEnterInLast = (isLast && visibleCount < 3)
+      ? () => section.classList.add('show-add')
+      : null;
+    section.appendChild(buildEntry(state.entries[i], i, onInput, onEnterInLast));
+  }
+
+  if (visibleCount < 3) {
+    const addBtn = document.createElement('button');
+    addBtn.className = 'entry-add-btn';
+    addBtn.setAttribute('aria-label', 'Add another');
+    addBtn.innerHTML =
+      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">` +
+        `<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>` +
+      `</svg>`;
+    addBtn.addEventListener('click', () => {
+      section.classList.remove('show-add');
+      onAddEntry();
+    });
+    section.appendChild(addBtn);
+  }
 }
 
-function buildEntry(text, idx, onInput) {
+function buildEntry(text, idx, onInput, onEnterInLast) {
   const item = document.createElement('div');
   item.className = 'entry-item';
-
-  const num = document.createElement('span');
-  num.className = 'entry-num';
-  num.textContent = idx + 1;
-  num.setAttribute('aria-hidden', 'true');
 
   const ta = document.createElement('textarea');
   ta.className   = 'entry-input';
   ta.value       = text;
-  ta.placeholder = "I\u2019m grateful for\u2026";
+  ta.placeholder = idx === 0 ? 'grateful for\u2026' : '';
   ta.rows        = 1;
   ta.setAttribute('autocorrect', 'on');
   ta.setAttribute('autocapitalize', 'sentences');
@@ -29,7 +47,15 @@ function buildEntry(text, idx, onInput) {
   setTimeout(resize, 0);
   ta.addEventListener('input', () => { resize(); onInput(idx, ta.value); });
 
-  item.appendChild(num);
+  if (onEnterInLast) {
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (ta.value.trim()) onEnterInLast();
+      }
+    });
+  }
+
   item.appendChild(ta);
   return item;
 }
