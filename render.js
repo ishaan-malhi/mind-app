@@ -358,20 +358,22 @@ export function renderDayDetail(bodyEl, entry, onSave) {
   list.className = 'detail-entries';
 
   if (onSave) {
-    // Edit mode: all 3 editable textareas
+    // Edit mode: only filled entries as editable textareas
     allEntries.forEach((text, idx) => {
+      if (!text.trim()) return;
       const item = document.createElement('div');
       item.className = 'entry-item';
       const ta = document.createElement('textarea');
       ta.className = 'entry-input';
       ta.value = text;
-      ta.placeholder = 'grateful for\u2026';
+      ta.placeholder = '';
       ta.rows = 1;
       ta.setAttribute('autocorrect', 'on');
       ta.setAttribute('autocapitalize', 'sentences');
       ta.setAttribute('aria-label', `Entry ${idx + 1}`);
       const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
-      setTimeout(resize, 0);
+      // rAF ensures the overlay panel is painted before we measure scrollHeight
+      requestAnimationFrame(resize);
       ta.addEventListener('input', () => { resize(); entry.entries[idx] = ta.value; onSave(entry); });
       item.appendChild(ta);
       list.appendChild(item);

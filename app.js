@@ -52,6 +52,7 @@ const detailBody      = $('detail-body');
 const closeDetailBtn  = $('close-detail-btn');
 const deleteDetailBtn = $('delete-detail-btn');
 const editDetailBtn   = $('edit-detail-btn');
+const shareDetailBtn  = $('share-detail-btn');
 const quoteScreen     = $('quote-screen');
 const quoteBg         = $('quote-bg');
 const quoteTextEl     = $('quote-text');
@@ -92,6 +93,7 @@ function init() {
   closeDetailBtn.addEventListener('click', closeDetail);
   if (deleteDetailBtn) deleteDetailBtn.addEventListener('click', deleteCurrentEntry);
   if (editDetailBtn) editDetailBtn.addEventListener('click', enableDetailEdit);
+  if (shareDetailBtn) shareDetailBtn.addEventListener('click', shareDetail);
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (!quoteScreen.classList.contains('hidden')) { closeQuoteScreen(); openReview(); return; }
@@ -349,6 +351,28 @@ function refreshCalendar() {
 }
 
 // ── Day detail ─────────────────────────────────────────────
+
+async function shareDetail() {
+  if (!currentDetailKey) return;
+  const entry = loadEntry(currentDetailKey);
+  if (!entry) return;
+  const filled = (entry.entries || []).filter(e => e.trim());
+  if (!filled.length) return;
+  const date = formatHistoryDate(currentDetailKey);
+  const text = filled.length === 1
+    ? `${date}\n\n${filled[0]}`
+    : `${date}\n\n${filled.map((e, i) => `${i + 1}. ${e}`).join('\n')}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Mind', text }); } catch (_) {}
+  } else {
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(text);
+      shareDetailBtn.setAttribute('aria-label', 'Copied!');
+      setTimeout(() => shareDetailBtn.setAttribute('aria-label', 'Share entry'), 1500);
+    } catch (_) {}
+  }
+}
 
 function detailSaver(key) {
   return updatedEntry => {
