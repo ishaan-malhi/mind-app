@@ -1,9 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#f4f3f0"/>
-  <!-- Heart -->
-  <path d="M256 368 C240 354 110 278 110 196 C110 152 142 122 186 122 C214 122 238 138 256 165 C274 138 298 122 326 122 C370 122 402 152 402 196 C402 278 272 354 256 368Z" fill="#7fa896"/>
-  <!-- Head circle (parchment cutout) -->
-  <circle cx="256" cy="208" r="52" fill="#f4f3f0"/>
-  <!-- Shoulders (parchment cutout) -->
-  <path d="M192 318 Q200 270 256 270 Q312 270 320 318Z" fill="#f4f3f0"/>
+  <rect width="512" height="512" rx="112" fill="#f0ebe1"/>
+  <text x="256" y="256" text-anchor="middle" dominant-baseline="central"
+        font-family="system-ui, -apple-system, sans-serif"
+        font-weight="700" font-size="280" fill="#b08898">M</text>
 </svg>

@@ -109,13 +109,26 @@ function init() {
   }
 
   setupNotifications();
+  updateZeroState();
+  isDayComplete(today).then(done => {
+    if (done) {
+      todayView.classList.remove('today--zero');
+      todayView.classList.add('today--done');
+    }
+  });
 }
 
 // ── Save ───────────────────────────────────────────────────
 
+function updateZeroState() {
+  const isEmpty = state.entries.every(e => !e.trim()) && !state.image && !state.voice;
+  todayView.classList.toggle('today--zero', isEmpty);
+}
+
 function save() {
   saveEntry(today, state);
   refreshStreak();
+  updateZeroState();
   if (state.entries.some(e => e.trim())) markDayComplete(today);
 }
 
@@ -129,6 +142,8 @@ function submitToday() {
         if (perm === 'granted') scheduleReminder();
       });
     }
+    todayView.classList.remove('today--zero');
+    todayView.classList.add('today--done');
     submitBtn.classList.add('submit-btn--done');
     setTimeout(openQuoteScreen, 320);
     setTimeout(() => submitBtn.classList.remove('submit-btn--done'), 800);
@@ -366,20 +381,27 @@ async function shareDetail() {
     return;
   }
 
-  // Share image as file if available
-  if (entry.image && navigator.canShare) {
+  const files = [];
+  if (entry.image) {
     try {
       const res = await fetch(entry.image);
       const blob = await res.blob();
-      const file = new File([blob], 'memory.jpg', { type: blob.type });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Mind', text });
-        return;
-      }
+      files.push(new File([blob], 'memory.jpg', { type: blob.type }));
+    } catch (_) {}
+  }
+  if (entry.voice) {
+    try {
+      const res = await fetch(entry.voice);
+      const blob = await res.blob();
+      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+      files.push(new File([blob], `voice.${ext}`, { type: blob.type }));
     } catch (_) {}
   }
 
-  // Text-only fallback
+  if (files.length && navigator.canShare?.({ files })) {
+    try { await navigator.share({ files, title: 'Mind', text }); return; } catch (_) {}
+  }
+
   try { await navigator.share({ title: 'Mind', text }); } catch (_) {}
 }
 
@@ -417,6 +439,8 @@ function deleteCurrentEntry() {
   clearDayComplete(key);
   if (key === today) {
     state = { date: today, entries: ['', '', ''], image: null, voice: null };
+    todayView.classList.remove('today--done');
+    todayView.classList.add('today--zero');
     refreshEntries();
     refreshMedia();
   }

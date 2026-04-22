@@ -1,4 +1,4 @@
-const CACHE = 'grateful-v20';
+const CACHE = 'grateful-v21';
 const SHELL = [
   './',
   './index.html',

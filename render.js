@@ -40,7 +40,7 @@ function buildEntry(text, idx, onInput, section, isLastAddable, onMaxReached) {
   const ta = document.createElement('textarea');
   ta.className   = 'entry-input';
   ta.value       = text;
-  ta.placeholder = '';
+  ta.placeholder = idx === 0 ? 'Say something :)' : '';
   ta.rows        = 1;
   ta.setAttribute('autocorrect', 'on');
   ta.setAttribute('autocapitalize', 'sentences');
