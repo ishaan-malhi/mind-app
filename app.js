@@ -19,6 +19,7 @@ let recSecs   = 0;
 let shakeLastX = 0, shakeLastY = 0, shakeLastZ = 0;
 let shakeCount = 0, shakeTimer = null;
 let motionListenerActive = false;
+let reviewOpenedAt = 0;
 
 const now = new Date();
 let calYear  = now.getFullYear();
@@ -148,6 +149,7 @@ function submitToday() {
     }
     todayView.classList.remove('today--zero');
     todayView.classList.add('today--done');
+    document.activeElement?.blur(); // clear iOS undo-typing gesture context
     submitBtn.classList.add('submit-btn--done');
     setTimeout(openQuoteScreen, 320);
     setTimeout(() => submitBtn.classList.remove('submit-btn--done'), 800);
@@ -336,12 +338,14 @@ function openReview() {
   switchTab('throwback');
   todayView.classList.add('slide-out');
   reviewView.classList.add('active');
+  reviewOpenedAt = Date.now();
   setupShake();
 }
 
 // ── Shake to shuffle ───────────────────────────────────────
 
 function onDeviceMotion(e) {
+  if (Date.now() - reviewOpenedAt < 1500) return; // cooldown — avoids iOS undo-typing conflict
   const acc = e.acceleration || e.accelerationIncludingGravity;
   if (!acc) return;
   const { x = 0, y = 0, z = 0 } = acc;
@@ -391,18 +395,31 @@ async function shuffleThrowback(direction) {
 
   const exitClass  = direction === 'right' ? 'card-exit-right' : 'card-exit-left';
   const enterClass = direction === 'right' ? 'card-enter-left' : 'card-enter-right';
+  const exitSign   = direction === 'right' ? 1 : -1;
 
+  let maxExitEnd = 0;
   cards.forEach((card, i) => {
-    card.style.animationDelay = `${i * 22}ms`;
+    const delay    = i * 38 + Math.random() * 35;
+    const duration = 240 + Math.random() * 120;
+    const rotate   = exitSign * (3 + Math.random() * 9);
+    card.style.animationDelay    = `${delay}ms`;
+    card.style.animationDuration = `${duration}ms`;
+    card.style.setProperty('--card-rotate', `${rotate}deg`);
     card.classList.add(exitClass);
+    maxExitEnd = Math.max(maxExitEnd, delay + duration);
   });
 
-  await new Promise(r => setTimeout(r, 180 + cards.length * 22));
+  await new Promise(r => setTimeout(r, maxExitEnd));
 
   renderThrowback(throwbackFeed, src => openViewer(src), key => openDetail(key));
 
   throwbackFeed.querySelectorAll('.throwback-card').forEach((card, i) => {
-    card.style.animationDelay = `${i * 28}ms`;
+    const delay    = i * 50 + Math.random() * 45;
+    const duration = 400 + Math.random() * 160;
+    const rotate   = (Math.random() - 0.5) * 8;
+    card.style.animationDelay    = `${delay}ms`;
+    card.style.animationDuration = `${duration}ms`;
+    card.style.setProperty('--card-rotate', `${rotate}deg`);
     card.classList.add(enterClass);
   });
 }
