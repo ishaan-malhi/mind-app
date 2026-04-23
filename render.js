@@ -40,7 +40,7 @@ function buildEntry(text, idx, onInput, section, isLastAddable, onMaxReached) {
   const ta = document.createElement('textarea');
   ta.className   = 'entry-input';
   ta.value       = text;
-  ta.placeholder = idx === 0 ? 'Say something :)' : '';
+  ta.placeholder = '';
   ta.rows        = 1;
   ta.setAttribute('autocorrect', 'on');
   ta.setAttribute('autocapitalize', 'sentences');
@@ -248,6 +248,11 @@ export function renderThrowback(feedEl, onViewPhoto, onOpenDay) {
     feedEl.innerHTML = `<p class="throwback-empty">Your story starts here.</p>`;
     return;
   }
+
+  const hint = document.createElement('p');
+  hint.className = 'throwback-hint';
+  hint.textContent = 'Shake to shuffle';
+  feedEl.appendChild(hint);
 
   contentKeys.forEach(key => {
     const entry = loadEntry(key);
