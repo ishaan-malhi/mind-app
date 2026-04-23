@@ -120,17 +120,13 @@ body {
 }
 
 #today-view.today--done {
-  background: var(--color-accent-soft);
+  background: color-mix(in srgb, var(--color-bg) 90%, var(--color-accent) 10%);
   transition: background 0.4s ease;
 }
 
-/* Zero state — tighten layout, show accent bar + entry background */
+/* Zero state — tighten layout, show accent bar */
 #today-view.today--zero .today-main {
   gap: 16px;
-}
-
-#today-view.today--zero .entries-section .entry-item:first-child {
-  background: rgba(176, 136, 152, 0.07);
 }
 
 #today-view.today--zero .entries-section .entry-item:first-child::before {
