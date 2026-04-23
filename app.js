@@ -373,16 +373,12 @@ async function setupShake() {
   if (motionListenerActive) return;
   if (typeof DeviceMotionEvent === 'undefined') return;
 
+  // iOS 13+: always call requestPermission — returns cached 'granted' with no dialog if already allowed
   if (typeof DeviceMotionEvent.requestPermission === 'function') {
-    const stored = localStorage.getItem('mind-motion-permission');
-    if (stored === 'denied') return;
-    if (stored !== 'granted') {
-      try {
-        const perm = await DeviceMotionEvent.requestPermission();
-        localStorage.setItem('mind-motion-permission', perm);
-        if (perm !== 'granted') return;
-      } catch (_) { return; }
-    }
+    try {
+      const perm = await DeviceMotionEvent.requestPermission();
+      if (perm !== 'granted') return;
+    } catch (_) { return; }
   }
 
   window.addEventListener('devicemotion', onDeviceMotion, { passive: true });
