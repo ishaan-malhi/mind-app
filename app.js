@@ -16,6 +16,10 @@ let recChunks = [];
 let recTimer  = null;
 let recSecs   = 0;
 
+let shakeLastX = 0, shakeLastY = 0, shakeLastZ = 0;
+let shakeCount = 0, shakeTimer = null;
+let motionListenerActive = false;
+
 const now = new Date();
 let calYear  = now.getFullYear();
 let calMonth = now.getMonth();
@@ -332,6 +336,75 @@ function openReview() {
   switchTab('throwback');
   todayView.classList.add('slide-out');
   reviewView.classList.add('active');
+  setupShake();
+}
+
+// ── Shake to shuffle ───────────────────────────────────────
+
+function onDeviceMotion(e) {
+  const acc = e.acceleration || e.accelerationIncludingGravity;
+  if (!acc) return;
+  const { x = 0, y = 0, z = 0 } = acc;
+  const delta = Math.sqrt(
+    Math.pow(x - shakeLastX, 2) +
+    Math.pow(y - shakeLastY, 2) +
+    Math.pow(z - shakeLastZ, 2)
+  );
+  shakeLastX = x; shakeLastY = y; shakeLastZ = z;
+
+  if (delta > 18) {
+    shakeCount++;
+    clearTimeout(shakeTimer);
+    shakeTimer = setTimeout(() => { shakeCount = 0; }, 600);
+    if (shakeCount >= 2) {
+      shakeCount = 0;
+      if (throwbackPanel.classList.contains('active')) {
+        shuffleThrowback(Math.random() > 0.5 ? 'left' : 'right');
+      }
+    }
+  }
+}
+
+async function setupShake() {
+  if (motionListenerActive) return;
+  if (typeof DeviceMotionEvent === 'undefined') return;
+
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    const stored = localStorage.getItem('mind-motion-permission');
+    if (stored === 'denied') return;
+    if (stored !== 'granted') {
+      try {
+        const perm = await DeviceMotionEvent.requestPermission();
+        localStorage.setItem('mind-motion-permission', perm);
+        if (perm !== 'granted') return;
+      } catch (_) { return; }
+    }
+  }
+
+  window.addEventListener('devicemotion', onDeviceMotion, { passive: true });
+  motionListenerActive = true;
+}
+
+async function shuffleThrowback(direction) {
+  const cards = [...throwbackFeed.querySelectorAll('.throwback-card')];
+  if (!cards.length) return;
+
+  const exitClass  = direction === 'right' ? 'card-exit-right' : 'card-exit-left';
+  const enterClass = direction === 'right' ? 'card-enter-left' : 'card-enter-right';
+
+  cards.forEach((card, i) => {
+    card.style.animationDelay = `${i * 22}ms`;
+    card.classList.add(exitClass);
+  });
+
+  await new Promise(r => setTimeout(r, 180 + cards.length * 22));
+
+  renderThrowback(throwbackFeed, src => openViewer(src), key => openDetail(key));
+
+  throwbackFeed.querySelectorAll('.throwback-card').forEach((card, i) => {
+    card.style.animationDelay = `${i * 28}ms`;
+    card.classList.add(enterClass);
+  });
 }
 
 function closeReview() {

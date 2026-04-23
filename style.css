@@ -700,6 +700,18 @@ body {
   line-height: 1.7;
 }
 
+/* ── Shuffle animations ───────────────────────────────────────── */
+
+@keyframes card-exit-left   { to   { transform: translateX(-110%) rotate(-4deg); opacity: 0; } }
+@keyframes card-exit-right  { to   { transform: translateX(110%)  rotate(4deg);  opacity: 0; } }
+@keyframes card-enter-left  { from { transform: translateX(-110%) rotate(-2deg); opacity: 0; } }
+@keyframes card-enter-right { from { transform: translateX(110%)  rotate(2deg);  opacity: 0; } }
+
+.card-exit-left   { animation: card-exit-left   0.18s ease-in forwards; }
+.card-exit-right  { animation: card-exit-right  0.18s ease-in forwards; }
+.card-enter-left  { animation: card-enter-left  0.3s  cubic-bezier(0.34,1.56,0.64,1) both; }
+.card-enter-right { animation: card-enter-right 0.3s  cubic-bezier(0.34,1.56,0.64,1) both; }
+
 /* ── Calendar ─────────────────────────────────────────────────── */
 
 #calendar-wrap {
