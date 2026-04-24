@@ -119,10 +119,6 @@ body {
   z-index: 1;
 }
 
-#today-view.today--done {
-  background: color-mix(in srgb, var(--color-bg) 90%, var(--color-accent) 10%);
-  transition: background 0.4s ease;
-}
 
 /* Zero state — tighten layout, show accent bar, ghost submit */
 #today-view.today--zero .today-main {
