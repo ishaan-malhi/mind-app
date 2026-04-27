@@ -354,7 +354,7 @@ export function renderCalendar(wrap, year, month, entryKeys, onDayClick, onPrevM
 
 // ── Day detail ─────────────────────────────────────────────
 
-export function renderDayDetail(bodyEl, entry, onSave, onShare, onEdit) {
+export function renderDayDetail(bodyEl, entry, onSave, onShare, onEdit, onPhoto) {
   bodyEl.innerHTML = '';
   const allEntries = entry.entries || ['', '', ''];
   const filled = allEntries.filter(e => e.trim());
@@ -405,7 +405,20 @@ export function renderDayDetail(bodyEl, entry, onSave, onShare, onEdit) {
 
   if (list.children.length > 0) bodyEl.appendChild(list);
 
-  if (entry.image || entry.voice) {
+  if (onSave && onPhoto) {
+    // Edit mode: photo add/remove, voice read-only
+    const photoArea = document.createElement('div');
+    photoArea.className = 'detail-media';
+    renderPhoto(entry, photoArea, onPhoto.onPick, onPhoto.onRemove, onPhoto.onView);
+    bodyEl.appendChild(photoArea);
+    if (entry.voice) {
+      const voiceArea = document.createElement('div');
+      voiceArea.className = 'detail-media';
+      voiceArea.appendChild(buildPlaybackUI(entry.voice, () => {}));
+      bodyEl.appendChild(voiceArea);
+    }
+  } else if (entry.image || entry.voice) {
+    // Read-only media
     const media = document.createElement('div');
     media.className = 'detail-media';
     if (entry.image) {

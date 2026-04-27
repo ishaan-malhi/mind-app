@@ -229,9 +229,18 @@ function refreshMedia() {
 
 // ── Photo ──────────────────────────────────────────────────
 
+let photoPickCallback = null;
+
 async function onPhotoSelect(e) {
   const file = e.target.files[0];
   if (!file) return;
+  if (photoPickCallback) {
+    const cb = photoPickCallback;
+    photoPickCallback = null;
+    try { cb(await compressImage(file)); } catch (_) {}
+    photoInput.value = '';
+    return;
+  }
   try { state.image = await compressImage(file); save(); refreshMedia(); } catch (_) {}
   photoInput.value = '';
 }
@@ -506,8 +515,21 @@ function enableDetailEdit() {
   if (!currentDetailKey) return;
   const entry = loadEntry(currentDetailKey);
   if (!entry) return;
-  renderDayDetail(detailBody, entry, detailSaver(currentDetailKey));
-  detailBody.querySelector('.entry-input')?.focus();
+  const saver = detailSaver(currentDetailKey);
+
+  function renderEdit() {
+    renderDayDetail(detailBody, entry, saver, null, null, {
+      onPick: () => {
+        photoPickCallback = img => { entry.image = img; saver(entry); renderEdit(); };
+        photoInput.click();
+      },
+      onRemove: () => { entry.image = null; saver(entry); renderEdit(); },
+      onView: src => openViewer(src),
+    });
+    detailBody.querySelector('.entry-input')?.focus();
+  }
+
+  renderEdit();
 }
 
 function openDetail(key) {
