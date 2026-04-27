@@ -169,7 +169,7 @@ async function scheduleReminder() {
   const complete = await isDayComplete(today);
   if (complete) return;
   const now = new Date();
-  if (now.getHours() >= 17) return; // already past 5pm
+  if (now.getHours() >= 18) return; // already past 6pm
   navigator.serviceWorker.ready.then(reg => {
     if (reg.active) reg.active.postMessage({ type: 'SCHEDULE_REMINDER', key: today });
   });

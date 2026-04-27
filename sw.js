@@ -1,4 +1,4 @@
-const CACHE = 'grateful-v32';
+const CACHE = 'grateful-v33';
 const SHELL = [
   './',
   './index.html',
@@ -43,13 +43,13 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// ── 5pm reminder ──────────────────────────────────────────────
+// ── 6pm reminder ──────────────────────────────────────────────
 
-function msUntil5pm() {
+function msUntil6pm() {
   const now = new Date();
-  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0, 0);
+  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0, 0);
   const diff = target - now;
-  return diff > 0 ? diff : null; // null = already past 5pm today
+  return diff > 0 ? diff : null; // null = already past 6pm today
 }
 
 async function isDayComplete(key) {
@@ -61,8 +61,8 @@ async function isDayComplete(key) {
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SCHEDULE_REMINDER') {
     const key = e.data.key;
-    const delay = msUntil5pm();
-    if (delay === null) return; // already past 5pm, don't schedule
+    const delay = msUntil6pm();
+    if (delay === null) return; // already past 6pm, don't schedule
 
     setTimeout(async () => {
       const complete = await isDayComplete(key);
