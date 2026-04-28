@@ -344,8 +344,14 @@ export function renderCalendar(wrap, year, month, entryKeys, onDayClick, onPrevM
 
     if (other)    btn.classList.add('other-month');
     if (isToday)  btn.classList.add('is-today');
-    if (hasEntry) { btn.classList.add('has-entry'); btn.addEventListener('click', () => onDayClick(key)); }
-    else          { btn.disabled = !isToday; }
+    if (hasEntry) btn.classList.add('has-entry');
+
+    const isPast = key < todayKey;
+    if (!other && (isToday || isPast)) {
+      btn.addEventListener('click', () => onDayClick(key));
+    } else {
+      btn.disabled = true;
+    }
 
     grid.appendChild(btn);
   });
@@ -363,9 +369,10 @@ export function renderDayDetail(bodyEl, entry, onSave, onShare, onEdit, onPhoto)
   list.className = 'detail-entries';
 
   if (onSave) {
-    // Edit mode: only filled entries as editable textareas
+    // Edit mode: filled entries as textareas; always show first slot for new entries
+    const hasAnyContent = allEntries.some(e => e.trim());
     allEntries.forEach((text, idx) => {
-      if (!text.trim()) return;
+      if (!text.trim() && (hasAnyContent || idx > 0)) return;
       const item = document.createElement('div');
       item.className = 'entry-item';
       const ta = document.createElement('textarea');

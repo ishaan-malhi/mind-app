@@ -511,9 +511,9 @@ function detailSaver(key) {
   };
 }
 
-function enableDetailEdit() {
+function enableDetailEdit(existingEntry) {
   if (!currentDetailKey) return;
-  const entry = loadEntry(currentDetailKey);
+  const entry = existingEntry || loadEntry(currentDetailKey);
   if (!entry) return;
   const saver = detailSaver(currentDetailKey);
 
@@ -533,11 +533,16 @@ function enableDetailEdit() {
 }
 
 function openDetail(key) {
-  const entry = loadEntry(key);
-  if (!entry) return;
+  const existing = loadEntry(key);
+  const isNew = !existing;
+  const entry = existing || { date: key, entries: ['', '', ''], image: null, voice: null };
   currentDetailKey = key;
   detailDate.textContent = formatHistoryDate(key);
-  renderDayDetail(detailBody, entry, null, shareDetail, enableDetailEdit);
+  if (isNew) {
+    enableDetailEdit(entry);
+  } else {
+    renderDayDetail(detailBody, entry, null, shareDetail, enableDetailEdit);
+  }
   dayDetail.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
   closeDetailBtn.focus();
